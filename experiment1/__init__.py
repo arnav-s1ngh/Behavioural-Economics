@@ -5,42 +5,54 @@ doc = """
 Asymmetric Information Experiment with Multiple Utility Tables
 """
 
-
 class C(BaseConstants):
-    NAME_IN_URL = 'asymmetric_info'
+    NAME_IN_URL = 'NC'
     PLAYERS_PER_GROUP = 2
-    NUM_ROUNDS = 1
+    NUM_ROUNDS = 3
+    tab_key = random.randint(0, 2)
 
     # Define the three different utility tables
     UTILITY_TABLES = [
         {
-            'buyer_choices': ['Low', 'High'],
-            'seller_choices': ['Accept', 'Reject'],
+            'table_color': "Red",
+            'buyer_choices': ['R1', 'R2', 'R3'],
+            'seller_choices': ['C1', 'C2'],
             'utilities': {
-                ('Low', 'Accept'): {'buyer': 5, 'seller': 3},
-                ('Low', 'Reject'): {'buyer': 0, 'seller': 0},
-                ('High', 'Accept'): {'buyer': 2, 'seller': 6},
-                ('High', 'Reject'): {'buyer': 0, 'seller': 0}
+                ('R1', 'C1'): {'buyer': 400, 'seller': 200},
+                ('R1', 'C2'): {'buyer': 350, 'seller': 0},
+                ('R2', 'C1'): {'buyer': 150, 'seller': 450},
+                ('R2', 'C2'): {'buyer': 350, 'seller': 0},
+                ('R3', 'C1'): {'buyer': 0, 'seller': 600},
+                ('R3', 'C2'): {'buyer': 350, 'seller': 0},
+
             }
         },
         {
-            'buyer_choices': ['Low', 'High'],
-            'seller_choices': ['Accept', 'Reject'],
+            'table_color': "Blue",
+            'buyer_choices': ['R1', 'R2', 'R3'],
+            'seller_choices': ['C1', 'C2'],
             'utilities': {
-                ('Low', 'Accept'): {'buyer': 4, 'seller': 4},
-                ('Low', 'Reject'): {'buyer': 0, 'seller': 0},
-                ('High', 'Accept'): {'buyer': 1, 'seller': 7},
-                ('High', 'Reject'): {'buyer': 0, 'seller': 0}
+                ('R1', 'C1'): {'buyer': 1000, 'seller': 200},
+                ('R1', 'C2'): {'buyer': 350, 'seller': 500},
+                ('R2', 'C1'): {'buyer': 750, 'seller': 450},
+                ('R2', 'C2'): {'buyer': 350, 'seller': 500},
+                ('R3', 'C1'): {'buyer': 600, 'seller': 600},
+                ('R3', 'C2'): {'buyer': 350, 'seller': 500},
+
             }
         },
         {
-            'buyer_choices': ['Low', 'High'],
-            'seller_choices': ['Accept', 'Reject'],
+            'table_color': "White",
+            'buyer_choices': ['R1', 'R2', 'R3'],
+            'seller_choices': ['C1', 'C2'],
             'utilities': {
-                ('Low', 'Accept'): {'buyer': 6, 'seller': 2},
-                ('Low', 'Reject'): {'buyer': 0, 'seller': 0},
-                ('High', 'Accept'): {'buyer': 3, 'seller': 5},
-                ('High', 'Reject'): {'buyer': 0, 'seller': 0}
+                ('R1', 'C1'): {'buyer': 700, 'seller': 200},
+                ('R1', 'C2'): {'buyer': 350, 'seller': 250},
+                ('R2', 'C1'): {'buyer': 450, 'seller': 450},
+                ('R2', 'C2'): {'buyer': 350, 'seller': 250},
+                ('R3', 'C1'): {'buyer': 300, 'seller': 600},
+                ('R3', 'C2'): {'buyer': 350, 'seller': 250},
+
             }
         }
     ]
@@ -48,7 +60,6 @@ class C(BaseConstants):
 
 class Subsession(BaseSubsession):
     scenario = models.IntegerField()
-
 
 def creating_session(subsession: Subsession):
     # Randomly select one of the three utility tables for the session
@@ -66,14 +77,17 @@ def creating_session(subsession: Subsession):
 
 class Group(BaseGroup):
     buyer_choice = models.StringField(
-        choices=['Low', 'High'],
+        choices=['R1', 'R2', 'R3'],
         doc="Choice made by the buyer"
     )
     seller_choice = models.StringField(
-        choices=['Accept', 'Reject'],
+        choices=['C1', 'C2'],
         doc="Choice made by the seller"
     )
-
+    table_color = models.StringField(
+        choices=['Red', 'White', 'Blue'],
+        doc="Choice made by the seller"
+    )
     buyer_payoff = models.CurrencyField()
     seller_payoff = models.CurrencyField()
 
@@ -85,7 +99,8 @@ class Player(BasePlayer):
 def set_payoffs(group: Group):
     # Get the current scenario's utility table
     scenario = group.subsession.scenario
-    utility_table = C.UTILITY_TABLES[scenario]
+
+    utility_table = C.UTILITY_TABLES[C.tab_key]
 
     # Find buyer and seller
     buyer = [p for p in group.get_players() if p.is_buyer][0]
@@ -143,17 +158,27 @@ class SellerChoice(Page):
     def vars_for_template(self):
         # Check if buyer's choice is set
         buyer_choice = self.group.field_maybe_none('buyer_choice')
+        asymmetric_info=C.tab_key
+        if asymmetric_info==0:
+            asymmetric_info="Red"
+        if asymmetric_info==1:
+            asymmetric_info="Blue"
+        if asymmetric_info==2:
+            asymmetric_info="White"
 
         # If buyer's choice is not set, return a flag for the template
         if buyer_choice is None:
             return {
                 'waiting_for_buyer': True,
-                'buyer_choice': None
+                'buyer_choice': None,
+                'asymmetric_info': asymmetric_info
+
             }
 
         return {
             'waiting_for_buyer': False,
-            'buyer_choice': buyer_choice
+            'buyer_choice': buyer_choice,
+            'asymmetric_info':asymmetric_info
         }
 
 class ResultsWaitPage(WaitPage):
@@ -166,9 +191,8 @@ class Results(Page):
     @staticmethod
     def vars_for_template(player):
         # Retrieve the scenario details for display
-        scenario = player.subsession.scenario
         return {
-            'scenario_details': C.UTILITY_TABLES[scenario]
+            'scenario_details': C.UTILITY_TABLES[C.tab_key]
         }
 
 
@@ -184,10 +208,3 @@ page_sequence = [
     Results
 ]
 
-page_sequence = [
-    Introduction,
-    BuyerChoice,
-    SellerChoice,
-    ResultsWaitPage,
-    Results
-]
