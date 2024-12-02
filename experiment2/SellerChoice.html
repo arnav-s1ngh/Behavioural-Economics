@@ -1,0 +1,50 @@
+{% extends "global/Page.html" %}
+{% block title %}
+    Seller's Decision
+{% endblock %}
+
+{% block content %}
+{% if waiting_for_buyer %}
+    <div class="alert alert-warning">
+        <h3>Please Wait</h3>
+        <p>You cannot make a decision yet. Waiting for the buyer to complete their choice. Please keep on refreshing this page every 10 seconds to check whether a decision has been made.</p>
+    </div>
+{% else %}
+    <div class="card bg-light mb-3">
+        <div class="card-body">
+            <h3 class="card-title">Seller's Choice</h3>
+
+            <div class="alert alert-info">
+                <strong>Buyer's Choice:</strong> {{ buyer_choice }}
+                <br>
+                <strong>Table Color:</strong> {{ asymmetric_info }}
+
+            </div>
+
+            <p class="card-text">
+                You are the Column Player/Seller in this transaction.
+                The buyer has chosen {{ buyer_choice }}.
+                Now you must decide whether to Accept or Reject.
+            </p>
+            {% load static %}
+            <img src="{{ static 'global/columnplayer.png'}}" with="200" height="200"/>
+            <div class="form-group">
+                {% formfield group.seller_choice %}
+            </div>
+
+            <div class="alert alert-warning" role="alert">
+                <strong>Instructions:</strong>
+                <ul>
+                    <li>The buyer has chosen '{{ buyer_choice }}'</li>
+                    <li>You can choose to 'C1' or 'C2' this offer</li>
+                    <li>Your decision will determine the final payoff for both you and the buyer</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Submit Your Decision
+    </button>
+{% endif %}
+{% endblock %}
