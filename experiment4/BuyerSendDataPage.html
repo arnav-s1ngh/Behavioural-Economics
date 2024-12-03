@@ -1,0 +1,19 @@
+{% extends "global/Page.html" %}
+{% block content %}
+
+<h3>Send Table Colors to Buyer</h3>
+<p>
+    You are the <strong>Seller</strong>. You can send information about the table colors to the buyer. You can choose to send one, multiple, or none of the colors.
+    <strong>True Table</strong> {{ asymmetric_info }}
+</p>
+
+<form method="post">
+    <label><input type="checkbox" name="message_table_color1" value="Red"> Red Table</label><br>
+    <label><input type="checkbox" name="message_table_color2" value="Blue"> Blue Table</label><br>
+    <label><input type="checkbox" name="message_table_color3" value="White"> White Table</label><br>
+    <br>
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>
+
+{% endblock %}
+
