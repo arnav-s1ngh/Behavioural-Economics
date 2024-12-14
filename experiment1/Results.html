@@ -1,0 +1,55 @@
+{% extends "global/Page.html" %}
+{% block title %}
+    Transaction Results
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3>Transaction Outcome</h3>
+    </div>
+    <div class="card-body">
+        {% if player.is_buyer %}
+            <p>Your Choice: {{ group.buyer_choice }}</p>
+            <p>Seller's Response: {{ group.seller_choice }}</p>
+            <p>Your Payoff: {{ player.payoff }}</p>
+        {% else %}
+            <p>Buyer's Choice: {{ group.buyer_choice }}</p>
+            <p>Your Response: {{ group.seller_choice }}</p>
+            <p>Your Payoff: {{ player.payoff }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h4>Scenario Details</h4>
+    </div>
+    <div class="card-body">
+        <p>Scenario Number: {{ subsession.scenario }}</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Buyer Choice</th>
+                    <th>Seller Choice</th>
+                    <th>Buyer Utility</th>
+                    <th>Seller Utility</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in scenario_details.utilities.items %}
+                    <tr {% if key.0 == group.buyer_choice and key.1 == group.seller_choice %}class="table-active"{% endif %}>
+                        <td>{{ key.0 }}</td>
+                        <td>{{ key.1 }}</td>
+                        <td>{{ value.buyer }}</td>
+                        <td>{{ value.seller }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<button type="next" class="btn btn-primary">
+        Next
+    </button>
+{% endblock %}
